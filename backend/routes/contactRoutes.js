@@ -1,18 +1,18 @@
 const express = require("express")
-const app = express()
-const contactModel = require("../models/contactModel")
+const router = express.Router()
+const Contact = require("../models/ContactModel")
 
-app.post("/addContact/", async(req,res)=>{
-    try{
+router.post(["/addContact", "/addContact/"], async (req, res) => {
+    try {
         // req.body merr informacione nga react
         console.log(req.body)
         // Informacionet e marra nga react kalojne tek modeli
-        const newContact = new contactModel(req.body)
+        const newContact = new Contact(req.body)
         // Ruajtja e informacionit
         await newContact.save()
         console.log("Contact added "+newContact)
         res.status(200).send(newContact)
-    }catch(err){
+    } catch (err) {
         console.log("Contact not added: "+err)
         res.status(500).send("Contact not added: "+err)
     }
@@ -20,4 +20,4 @@ app.post("/addContact/", async(req,res)=>{
 
 
 
-module.exports = app
+module.exports = router

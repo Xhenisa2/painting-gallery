@@ -1,0 +1,71 @@
+.hero-section {
+  background: linear-gradient(115deg, #f5f0e9 0%, #fbfaf7 54%, #e7ddd1 100%);
+  overflow: hidden;
+  padding: 150px 0;
+  text-align: center;
+}
+
+.hero-content {
+  margin: 0 auto;
+  max-width: 760px;
+}
+
+.hero-subtitle {
+  color: #a37b47;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  margin-bottom: 1.25rem;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  color: #25211e;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(3rem, 6vw, 5.6rem);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+  margin-bottom: 1.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 680px;
+}
+
+.hero-text {
+  color: #625c56;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-bottom: 2.2rem;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 560px;
+}
+
+.hero-btn {
+  background: #29231f;
+  border: 1px solid #29231f;
+  border-radius: 0;
+  font-weight: 600;
+  padding: 0.9rem 1.8rem;
+  transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.hero-btn:hover,
+.hero-btn:focus {
+  background: #a37b47;
+  border-color: #a37b47;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 991px) {
+  .hero-section {
+    padding: 110px 0;
+  }
+}
+
+@media (max-width: 575px) {
+  .hero-section {
+    padding: 85px 0;
+  }
+}
