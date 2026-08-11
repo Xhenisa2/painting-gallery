@@ -1,59 +1,150 @@
-import { Container, Form, Button } from "react-bootstrap";
+import { useState } from "react";
+import { Container, Form, Button, Alert, Card } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function AddPainting() {
+  const navigate = useNavigate();
 
-    return(
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [image, setImage] = useState(null);
 
-        <Container className="py-5">
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-            <h2>Add Painting</h2>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-            <Form>
+    setMessage("");
+    setError("");
 
-                <Form.Group className="mb-3">
+    if (!title || !image) {
+      setError("Titulli dhe fotografia janë të detyrueshme.");
+      return;
+    }
 
-                    <Form.Label>Title</Form.Label>
+    const formData = new FormData();
 
-                    <Form.Control/>
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("category", category);
+    formData.append("image", image);
 
-                </Form.Group>
+    try {
+ const token = localStorage.getItem("token");
 
-                <Form.Group className="mb-3">
+await axios.post(
+  "http://localhost:5000/api/paintings",
+  formData,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+      setMessage("Piktura u shtua me sukses!");
 
-                    <Form.Label>Description</Form.Label>
+      setTitle("");
+      setDescription("");
+      setCategory("");
+      setImage(null);
 
-                    <Form.Control as="textarea"/>
+      document.getElementById("paintingImage").value = "";
 
-                </Form.Group>
+    } catch (err) {
+      console.log(err);
 
-                <Form.Group className="mb-3">
+      setError(
+        err.response?.data?.message ||
+        "Piktura nuk u shtua."
+      );
+    }
+  };
 
-                    <Form.Label>Category</Form.Label>
+  return (
+    <Container className="py-5">
 
-                    <Form.Control/>
+      <Card className="shadow p-4 mx-auto" style={{ maxWidth: "700px" }}>
 
-                </Form.Group>
+        <h2 className="mb-4">
+          Add New Painting
+        </h2>
 
-                <Form.Group className="mb-3">
+        {message && (
+          <Alert variant="success">
+            {message}
+          </Alert>
+        )}
 
-                    <Form.Label>Upload Image</Form.Label>
+        {error && (
+          <Alert variant="danger">
+            {error}
+          </Alert>
+        )}
 
-                    <Form.Control type="file"/>
+        <Form onSubmit={handleSubmit}>
 
-                </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Painting Title</Form.Label>
 
-                <Button variant="dark">
+            <Form.Control
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter painting title"
+            />
+          </Form.Group>
 
-                    Save Painting
+          <Form.Group className="mb-3">
+            <Form.Label>Description</Form.Label>
 
-                </Button>
+            <Form.Control
+              as="textarea"
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe the painting"
+            />
+          </Form.Group>
 
-            </Form>
+          <Form.Group className="mb-3">
+            <Form.Label>Category</Form.Label>
 
-        </Container>
+            <Form.Control
+              type="text"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="e.g. Abstract, Portrait, Landscape"
+            />
+          </Form.Group>
 
-    )
+          <Form.Group className="mb-4">
+            <Form.Label>Painting Image</Form.Label>
 
+            <Form.Control
+              id="paintingImage"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => setImage(e.target.files[0])}
+            />
+          </Form.Group>
+
+          <Button
+            type="submit"
+            variant="dark"
+            className="w-100"
+          >
+            Add Painting
+          </Button>
+
+        </Form>
+
+      </Card>
+
+    </Container>
+  );
 }
 
-export default AddPainting
+export default AddPainting;

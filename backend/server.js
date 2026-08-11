@@ -1,58 +1,107 @@
+require("dotenv").config();
+
 const express = require("express");
-const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
-const session = require("express-session");
+const cookieParser = require("cookie-parser");
 const path = require("path");
 
 const contactRoute = require("./routes/contactRoutes");
-const itemRoute = require("./routes/paintingRoutes");
+const paintingRoute = require("./routes/paintingRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
-// Middleware
+const app = express();
+
+
+// =========================
+// CORS
+// =========================
+
 app.use(
   cors({
+    origin: "http://localhost:3001",
     credentials: true,
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
-    exposedHeaders: ["set-cookie"],
   })
 );
+
+
+// =========================
+// MIDDLEWARE
+// =========================
+
+app.use(cookieParser());
+
+app.use(express.json());
 
 app.use(
-  session({
-    secret: "This will be secret",
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24,
-    },
+  express.urlencoded({
+    extended: true,
   })
 );
 
-app.use(express.json({ limit: "1000mb" }));
-app.use(express.urlencoded({ extended: true }));
 
-app.use("/images", express.static(path.join(__dirname, "images")));
+// =========================
+// IMAGES
+// =========================
 
-// MongoDB Atlas Connection
-mongoose
-  .connect(
-    "mongodb+srv://xhenisa2:Website2123@cluster0.au5mvpr.mongodb.net/artgallery?retryWrites=true&w=majority&appName=Cluster0"
+app.use(
+  "/images",
+  express.static(
+    path.join(__dirname, "images")
   )
+);
+
+
+// =========================
+// MONGODB
+// =========================
+
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Atlas Connected");
   })
-  .catch((err) => {
-    console.log("❌ MongoDB Connection Error:");
-    console.log(err);
+  .catch((error) => {
+    console.log(
+      "❌ MongoDB Connection Error:",
+      error
+    );
   });
 
-// Routes
-app.use(contactRoute);
-app.use(itemRoute);
 
-// Server
-const PORT = 5000;
+// =========================
+// ROUTES
+// =========================
+
+app.use(contactRoute);
+
+app.use(paintingRoute);
+
+app.use(
+  "/api/admin",
+  adminRoutes
+);
+
+
+// =========================
+// TEST
+// =========================
+
+app.get("/", (req, res) => {
+  res.send(
+    "Xhulia Toska Art API is running!"
+  );
+});
+
+
+// =========================
+// SERVER
+// =========================
+
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(
+    `🚀 Server running on http://localhost:${PORT}`
+  );
 });

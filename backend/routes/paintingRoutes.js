@@ -3,7 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs/promises");
 const Painting = require("../models/PaintingModel");
-
+const protect = require("../middleware/authMiddleware");
 const router = express.Router();
 const imagesDirectory = path.join(__dirname, "..", "images");
 
@@ -42,7 +42,11 @@ router.get("/api/paintings/:id", async (req, res) => {
   }
 });
 
-router.post("/api/paintings", upload.single("image"), async (req, res) => {
+router.post(
+  "/api/paintings",
+  protect,
+  upload.single("image"),
+  async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "An image is required." });
 
@@ -59,7 +63,62 @@ router.post("/api/paintings", upload.single("image"), async (req, res) => {
   }
 });
 
-router.delete("/api/paintings/:id", async (req, res) => {
+// UPDATE PAINTING
+router.put(
+  "/api/paintings/:id",
+  protect,
+  upload.single("image"),
+  async (req, res) => {  try {
+    const painting = await Painting.findById(req.params.id);
+
+    if (!painting) {
+      return res.status(404).json({
+        message: "Painting not found.",
+      });
+    }
+
+    // Ruajmë informacionet e reja
+    painting.title = req.body.title;
+    painting.description = req.body.description;
+    painting.category = req.body.category;
+
+    // Nëse është zgjedhur foto e re
+    if (req.file) {
+      const oldImage = painting.image;
+
+      painting.image = req.file.filename;
+
+      // Fshi foton e vjetër
+      if (oldImage) {
+        await fs
+          .unlink(path.join(imagesDirectory, oldImage))
+          .catch(() => {});
+      }
+    }
+
+    const updatedPainting = await painting.save();
+
+    res.status(200).json(imageUrl(updatedPainting));
+
+  } catch (error) {
+    console.log("Update painting error:", error);
+
+    // Nëse fotoja e re u upload-ua por update dështoi
+    if (req.file) {
+      await fs
+        .unlink(path.join(imagesDirectory, req.file.filename))
+        .catch(() => {});
+    }
+
+    res.status(400).json({
+      message: "Painting could not be updated.",
+    });
+  }
+});
+router.delete(
+  "/api/paintings/:id",
+  protect,
+  async (req, res) => {
   try {
     const painting = await Painting.findByIdAndDelete(req.params.id);
     if (!painting) return res.status(404).json({ message: "Painting not found." });

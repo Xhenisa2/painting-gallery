@@ -6,36 +6,54 @@ const login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
+    if (!username || !password) {
+      return res.status(400).json({
+        message: "Username dhe password janë të detyrueshme.",
+      });
+    }
+
     const admin = await Admin.findOne({ username });
 
     if (!admin) {
       return res.status(401).json({
-        message: "Invalid username or password",
+        message: "Username ose password i gabuar.",
       });
     }
 
-    const isMatch = await bcrypt.compare(password, admin.password);
+    const passwordCorrect = await bcrypt.compare(
+      password,
+      admin.password
+    );
 
-    if (!isMatch) {
+    if (!passwordCorrect) {
       return res.status(401).json({
-        message: "Invalid username or password",
+        message: "Username ose password i gabuar.",
       });
     }
 
     const token = jwt.sign(
-      { id: admin._id },
-      "SECRET_KEY",
-      { expiresIn: "1d" }
+      {
+        id: admin._id,
+        username: admin.username,
+        role: admin.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
     );
 
-    res.json({
+    res.status(200).json({
+      message: "Login successful",
       token,
       username: admin.username,
     });
 
-  } catch (err) {
+  } catch (error) {
+    console.log("Login error:", error);
+
     res.status(500).json({
-      message: err.message,
+      message: "Server error.",
     });
   }
 };

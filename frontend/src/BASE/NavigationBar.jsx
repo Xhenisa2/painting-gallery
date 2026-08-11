@@ -1,39 +1,39 @@
-import React, { useContext } from 'react'
+import React from "react";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import { Link, useNavigate } from "react-router-dom";
-import "./NavigationBar.css";
-import { UserContext } from '../Admin/UserContext'
-import axios from 'axios'
-function NavigationBar() {
-  const nav = useNavigate()
-  // Merr userInfo dhe setter-in nga context-i.
-  const { userInfo, setUserInfo, authLoading } = useContext(UserContext)
 
-  const handleLogout = async () => {
-    // Dergo kerkese logout dhe perfshi cookies.
-    await axios.post('http://localhost:5000/logout/', null, { withCredentials: true })
-      .then(res => {
-        // Pas logout, pastro userInfo nga context-i.
-        setUserInfo({})
-        // Ridrejto te faqja e login.
-        nav('/login', { replace: true })
-      })
-      .catch(err => console.log("Not logut"))
-  }
+import "./NavigationBar.css";
+
+function NavigationBar() {
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("token");
+  const username = localStorage.getItem("adminUsername");
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("adminUsername");
+
+    navigate("/login");
+  };
 
   return (
     <Navbar expand="lg" className="navbar-custom" sticky="top">
       <Container>
 
-        <Navbar.Brand as={Link} to="/" className="logo">
+        <Navbar.Brand
+          as={Link}
+          to="/"
+          className="logo"
+        >
           Xhulia Toska Art
         </Navbar.Brand>
 
-        <Navbar.Toggle />
+        <Navbar.Toggle aria-controls="main-navbar" />
 
-        <Navbar.Collapse>
+        <Navbar.Collapse id="main-navbar">
 
           <Nav className="ms-auto">
 
@@ -53,17 +53,25 @@ function NavigationBar() {
               Contact
             </Nav.Link>
 
- {authLoading ? null : userInfo.email ? (
+            {token ? (
               <>
-                <Nav.Link as={Link} to="/createItem/">Create Item</Nav.Link>
-                <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
+                <Nav.Link as={Link} to="/admin/dashboard">
+                  Dashboard
+                </Nav.Link>
+
+                <Nav.Link
+                  onClick={handleLogout}
+                  style={{ cursor: "pointer" }}
+                >
+                  Logout
+                </Nav.Link>
               </>
             ) : (
-              // Nese s'eshte i loguar, shfaq register dhe login.
-              <>
-                <Nav.Link as={Link} to="/login/" className="btn btn-primary">Login</Nav.Link>
-              </>
+              <Nav.Link as={Link} to="/login">
+                Login
+              </Nav.Link>
             )}
+
           </Nav>
 
         </Navbar.Collapse>
